@@ -1,0 +1,24 @@
+{
+  "name": "backenkimkc",
+  "version": "1.0.0",
+  "description": "this is indepth project about backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ar-vi-nd/backendkimkc.git"
+  },
+  "keywords": [
+    "backend",
+    "node.js",
+    "express.js"
+  ],
+  "author": "mike",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ar-vi-nd/backendkimkc/issues"
+  },
+  "homepage": "https://github.com/ar-vi-nd/backendkimkc#readme"
+}
