@@ -18,10 +18,27 @@ app.use(express.static(path.resolve('./public')))
 
 app.use(cookieParser())
 
-// export default app;
+
+
+// ========================  NOTE ============================
+
+// extentions are must otherwise I'm getting errors
+
+// ========================  NOTE =============================
+
+
+
+
+// routes import
+
+import userRouter from './routes/user.route.js';
+// since we are exporting router in user.routes.js as default we can import it with any name
+
+
+
+// routes declaration
+
+app.use("/api/v1/users",userRouter)
+
 
 export {app}
-// same thing
-
-// just changes the way how you import this file in other file
-// import {app} from './app.js'
