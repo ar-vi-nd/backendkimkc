@@ -1,26 +1,41 @@
 
 // require('dotenv').config({path:'./env'})
 // not working because type is set as module in package.json
+// ReferenceError: require is not defined in ES module scope, you can use import instead
+
 
 // import 'dotenv/config'
-// same thing
 
 import dotenv from 'dotenv';
-
-// Load environment variables from .env file
 dotenv.config();
 
-// console.log(process.env)
+
+// same thing but different as the second statement requires some modification in the run script otherwise I wont be able to use env variables in those files when they are initialized
+
+
+// // Load environment variables from .env file
+
+
+
+
+
+
+
+
 import {app} from './app.js';
 
 
 import connectDB from './db/index.js';
+
+
 // sometimes extention is must otherwise you get an error
 // dont know why but node.js not importing the file without extention
 
 // In your original script, you're using commas inside the .then() method, which is not correct.
 // the below The .then() method accepts up to two arguments: one for the success callback and one for the failure callback.
 // so just write everything inside .then inside a anonyomous function
+
+
 
 connectDB().then(()=>{
 

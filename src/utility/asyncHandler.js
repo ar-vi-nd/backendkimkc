@@ -12,6 +12,8 @@
 //     }
 // }
 
+import { ApiResponse } from "./ApiResponse.js"
+
 
 // returning this function is must as when controller is called from user route
 // we want to wrap the function written in controller in try catch or say promises
@@ -21,6 +23,7 @@ const asyncHandler = (fun)=>{
   return (req,res,next)=>{
         Promise.resolve(fun(req,res,next)).catch(err=>{
             next(err)
+            // return res.status(200).json(new ApiResponse(400,err)) 
         })
     }
 }

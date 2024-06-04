@@ -1,9 +1,29 @@
 import { Router } from "express";
+import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
 import { registerUser } from "../controllers/user.controller.js";
 
-router.route("/register").post(registerUser)
+router.route("/register").post(
+
+    // to send pictures with different field name
+    // if you increase the maxcount for a field the no of file objects in the array will increase if more files are present but each would have same field name
+    upload.fields([
+        {
+            name:"avatar",
+            maxCount:1
+        },
+        {
+            name: "coverImage",
+            maxCount:1
+        }
+    ]),
+    // to send pictures with same fieldname as you can send myltiple pics with different field names
+    // upload.array('coverImage',5),
+
+    // also multiple instance of multer might give error as it overwrite the previous fields
+    
+    registerUser)
 
 
 
