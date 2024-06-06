@@ -46,7 +46,12 @@ const userSchema = new Schema({
     }
 },{timestamps:true})
 
-const User = mongoose.model("User",userSchema)
+
+// you cannot make model until all your hooks are defined otherwise these methods wont be available to user
+// also pre hook wont run
+// const User = mongoose.model("User",userSchema)
+
+
 
 // Using simple function in this pre hook as we cant use this inside the arrow function because it would refer to global object
 userSchema.pre("save",async function(next){
@@ -62,9 +67,10 @@ userSchema.pre("save",async function(next){
 })
 
 
-userSchema.methods.isPasswordCorrect = async function(password){
-   return await bcrypt.compare(password,this.password)
-}
+userSchema.methods.isPasswordCorrect = async function(password) {
+    // console.log( await bcrypt.hash(password,10))
+    return await bcrypt.compare(password, this.password);
+};
 
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
@@ -90,6 +96,9 @@ userSchema.methods.generateRefreshToken = function(){
     }
 )
 }
+
+const User = mongoose.model("User",userSchema)
+
 
 
 export default User;
