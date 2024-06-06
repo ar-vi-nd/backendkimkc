@@ -174,7 +174,7 @@ const userLogin = asyncHandler(async (req,res)=>{
     // console.log("existing user after removing password",existingUser)
 
     // this will print nothing but will change the password field in existingUser
-    console.log(existingUser.password = undefined)
+    // console.log(existingUser.password = undefined)
     existingUser.password = undefined
 
     return res.status(200)
@@ -223,8 +223,11 @@ const userLogout = asyncHandler(async(req,res)=>{
 
 })
 
-const refreshAccessToken = asyncHandler(async(req,res)=>{
+const refreshTokens = asyncHandler(async(req,res)=>{
     const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken
+
+    console.log(req.cookies.refreshToken)
+    console.log(incomingRefreshToken)
     if(!incomingRefreshToken){
         throw new ApiError(400,"Invalid Refresh Token")
     }
@@ -246,12 +249,12 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
         httpOnly:true,
         secure: true
     }
-    const {accessToken,refreshToken} = await generateAccessToken(user)
+    const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user)
 
     return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,{accessToken,refreshToken},"Access and Refresh Tokens Refreshed"))
 })
 
-export {userLogin,userLogout}
+export {userLogin,userLogout,refreshTokens}
 
 
 

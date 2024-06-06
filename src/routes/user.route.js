@@ -2,7 +2,7 @@ import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
-import { registerUser, userLogin, userLogout } from "../controllers/user.controller.js";
+import { refreshTokens, registerUser, userLogin, userLogout } from "../controllers/user.controller.js";
 import { verifyjwt } from "../middlewares/auth.middleware.js";
 
     router.route("/register").post(
@@ -36,6 +36,8 @@ import { verifyjwt } from "../middlewares/auth.middleware.js";
     router.route("/userlogout").get(verifyjwt
         ,userLogout
     )
+
+    router.route("/refreshtokens").get(refreshTokens)
 
 
 
