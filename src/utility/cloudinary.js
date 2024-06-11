@@ -36,7 +36,16 @@ const uploadOnCloudinary = async(localFilePath)=>{
     }
 }
 
-export {uploadOnCloudinary}
+const deleteFromCloudinary = async(cloudinaryFilePath)=>{
+    try{
+        const response =  await cloudinary.uploader.destroy(cloudinaryFilePath,{resource_type:"image"})
+        return response
+    }catch(error){
+        throw new ApiError(400,"File not deleted from cloudinary : ",error)
+    }
+}
+
+export {uploadOnCloudinary,deleteFromCloudinary}
 
 // const uploadResult = cloudinary.uploader.upload("https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg", {
 //     public_id: "shoes"

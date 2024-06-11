@@ -6,9 +6,10 @@ import User from "../models/user.model.js"
 // dotenv.config()
 // console.log("inside controller printing process.env :",process.env.CLOUDINARY_API_KEY)
 
-import {uploadOnCloudinary} from "../utility/cloudinary.js"
+import {deleteFromCloudinary, uploadOnCloudinary} from "../utility/cloudinary.js"
 import { ApiResponse } from "../utility/ApiResponse.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 
 const generateAccessAndRefreshToken = async(existingUser)=>{
@@ -355,7 +356,7 @@ const updateAvatar = asyncHandler(async(req,res)=>{
 })
 const updateCoverImage = asyncHandler(async(req,res)=>{
 
-    console.log(req.file)
+    // console.log(req.file)
 
     const coverImage = await uploadOnCloudinary(req.file.path)
     if(!coverImage){
@@ -370,6 +371,16 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
 
     console.log(coverImage)
 
+    const oldUser = await User.findById(req.user._id)
+
+    if(!oldUser){
+        throw new ApiError(400,"Unauthorized Request")
+    }
+
+    const oldCoverImagePath = oldUser.coverImage
+
+    console.log(oldCoverImagePath)
+
 
     const updatedUser = await User.findByIdAndUpdate(req.user._id,{
         $set:{coverImage : coverImage.url}
@@ -381,8 +392,137 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
 
     console.log(updatedUser)
 
+    if(oldCoverImagePath){
+        const response = await deleteFromCloudinary(oldCoverImagePath)
+        console.log(response)
+
+    }
+
     return res.status(200).json(new ApiResponse(200,"Cover Image Updated Successfully"))
 
+})
+
+const getUserChannelProfile = asyncHandler(async(req,res)=>{
+    const {username} = req.params
+    if(!username?.trim()){
+        throw new ApiError(400,"Username is missing")
+    }
+
+   const channel = await User.aggregate([
+    {
+        $match : {
+            username: username?.toLowerCase()
+        }
+    },{
+
+        // $lookup is somwhat similar to left outer join and it works on array of objects i guess
+        // and in this case there is only one object in the array
+        $lookup:{
+            // dont know why but here i need to use the plural form of mongodb model in lowercase
+            from:"subscriptions",
+            localField:"_id",
+            foreignField:"channel",
+            as:"subscribers"
+        }
+        // whatever is the result of this lookup it will be added as a new field 'subscribers' in each object of the array 
+    },{
+        // similarly this lookup will run on the resultant array of objects of the previous lookup
+        // Each pipeline works on the result of the preious pipeline
+        $lookup: {
+            from : "subscriptions",
+            localField:"_id",
+            foreignField:"subscriber",
+            as :"subscribedTo"
+        }
+    },{
+        $addFields:{
+            subscribersCount :{
+                $size : "$subscribers" 
+            },
+            channelsSubscribedToCount : {
+                $size : "$subscribedTo"
+            },
+            isSubscribed : {
+                $cond:{
+                    if:{$in:[req.user?._id,"$subscribers.subscriber"]},
+                    then: true,
+                    else:false
+                }
+            }
+        }
+    },{
+        $project:{
+            fullName:1,
+            username:1,
+            email:1,
+            subscribersCount:1,
+            channelsSubscribedToCount:1,
+            isSubscribed:1,
+            avatar:1,
+            coverImage:1
+
+        }
+    }
+   ])
+
+   if(!channel?.length){
+    throw new ApiError(400,"channel does not exist")
+   }
+
+   console.log(channel)
+
+   return res.status(200).json(new ApiResponse(200,channel[0],"User channel fetched successfully"))
+
+    
+})
+
+const getUserWatchHistory = asyncHandler(async (req,res)=>{
+
+    const userWatchHistory = await User.aggregate([
+        {
+            $match : {
+                _id : new mongoose.Types.ObjectId.createFromHexString(req.user._id)
+            }
+        },
+        {
+            $lookup:{
+                from:"videos",
+                localField:"watchHistory",
+                foreignField:"_id",
+                as:"watchHistory",
+                pipeline:[
+                    {
+                    $lookup:{
+                        from:"users",
+                        localField:"owner",
+                        foreignField:"_id",
+                        as:"owner",
+                        pipeline:[
+                            {
+                                $project:{
+                                    _id:1,
+                                    fullName:1,
+                                    email:1,
+                                    username:1,
+                                    avatar:1
+                                }
+                            }
+                        ]
+                    } 
+                    },
+                    {
+                $addFields:{
+                    owner:{
+                        $first:"$owner"
+                    }
+                }
+            }]
+            }
+        }
+    ])
+
+    console.log(userWatchHistory)
+    return res.status(200).ApiResponse(400,userWatchHistory[0],"User history fetched successfully")
 })
 
 export {userLogin,userLogout,refreshTokens,changePassword,updateUser,updateAvatar,updateCoverImage}
