@@ -254,7 +254,138 @@ const refreshTokens = asyncHandler(async(req,res)=>{
     return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,{accessToken,refreshToken},"Access and Refresh Tokens Refreshed"))
 })
 
-export {userLogin,userLogout,refreshTokens}
+const changePassword = asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword} = req.body
+
+    console.log(oldPassword,newPassword)
+
+    if(!(oldPassword.trim()&& newPassword.trim())){
+        throw new ApiError(400,"Both Old and new password are required")
+    }
+    const user = await User.findOne({_id : req.user._id})
+
+    if(!user){
+        throw new ApiError(400,"Unauthorized access")
+    }
+
+    console.log(user)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if(!isPasswordCorrect){
+        throw new ApiError(400,"Wrong Old Password")
+    }
+
+    user.password = newPassword
+    const updatedUser = await user.save()
+
+    console.log(updatedUser)
+
+    return res.status(201).json(new ApiResponse(200,"Password Updated"))
+
+})
+
+const updateUser = asyncHandler(async(req,res)=>{
+    if(!(username.trim()||email.trim()||fullName.trim())){
+        throw new ApiError(400,"Some fields required")
+    }
+
+    const {fullName,email,username} = req.body
+
+    const finduserbyemail = await User.findOne({email})
+    if(finduserbyemail._id!=req.user._id){
+        throw new ApiError(400,"Email already exixt")
+    }
+
+    const finduserbyusername = await User.findOne({username})
+    if(finduserbyusername._id != req.user._id){
+        throw new ApiError(400,"Username already exist")
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        {$set:{
+            fullName:fullName,
+            email:email,
+            username: username
+        }},
+        {new:true}
+    )
+
+    if(!updateUser){
+        throw new  ApiError(400,"Error while updating user")
+    }
+
+    return res.status(200).json(new ApiResponse(200,"User Updated Successfully"))
+
+
+
+})
+
+const updateAvatar = asyncHandler(async(req,res)=>{
+
+    console.log(req.file)
+
+   
+
+    const avatar = await uploadOnCloudinary(req.file.path)
+    if(!avatar){
+        throw new ApiError(400,"Error updating avatar")
+    }
+
+    // const existingUser = await User.findById(req.user._id)
+    // if(!existingUser){
+    //     throw new ApiError(400,"Unauthorized Access")
+    // }
+    // console.log(existingUser)
+
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id,{
+        $set:{avatar : avatar.url}
+    },{new:true})
+
+    if(!updatedUser){
+        throw new ApiError(400,"Error Updating Avatar")
+    }
+
+    console.log(updatedUser)
+
+    return res.status(200).json(new ApiResponse(200,"Avatar Updated Successfully"))
+
+})
+const updateCoverImage = asyncHandler(async(req,res)=>{
+
+    console.log(req.file)
+
+    const coverImage = await uploadOnCloudinary(req.file.path)
+    if(!coverImage){
+        throw new ApiError(400,"Error updating coverImage")
+    }
+
+    // const existingUser = await User.findById(req.user._id)
+    // if(!existingUser){
+    //     throw new ApiError(400,"Unauthorized Access")
+    // }
+    // console.log(existingUser)
+
+    console.log(coverImage)
+
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id,{
+        $set:{coverImage : coverImage.url}
+    },{new:true})
+
+    if(!updatedUser){
+        throw new ApiError(400,"Error Updating Avatar")
+    }
+
+    console.log(updatedUser)
+
+    return res.status(200).json(new ApiResponse(200,"Cover Image Updated Successfully"))
+
+})
+
+export {userLogin,userLogout,refreshTokens,changePassword,updateUser,updateAvatar,updateCoverImage}
 
 
 

@@ -2,13 +2,13 @@ import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
-import { refreshTokens, registerUser, userLogin, userLogout } from "../controllers/user.controller.js";
+import { changePassword, refreshTokens, registerUser, updateAvatar, updateCoverImage, updateUser, userLogin, userLogout } from "../controllers/user.controller.js";
 import { verifyjwt } from "../middlewares/auth.middleware.js";
 
     router.route("/register").post(
 
     // to send pictures with different field name
-    // if you increase the maxcount for a field the no of file objects in the array will increase if more files are present but each would have same field name
+    // if you increase the maxcount for a field, the no of file objects in the array will increase if more files are present but each would have same field name
     upload.fields([
         {
             name:"avatar",
@@ -38,6 +38,12 @@ import { verifyjwt } from "../middlewares/auth.middleware.js";
     )
 
     router.route("/refreshtokens").get(refreshTokens)
+
+    router.route("/changepassword").post(verifyjwt,changePassword)
+
+    router.route("/updateuser").post(verifyjwt,updateUser)
+    router.route("/updateavatar").post( verifyjwt,upload.single('avatar'),updateAvatar)
+    router.route("/updatecoverimage").post( verifyjwt,upload.single('coverImage'),updateCoverImage)
 
 
 
