@@ -3,15 +3,26 @@ import mongoose, {Schema} from "mongoose";
 // this below line imports helps in adding pagination and is used as a plugin
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
+const urlAndPublicIdSchema = new Schema({
+    url: {
+      type: String,
+      required: true
+    },
+    public_id: {
+      type: String,
+      required: true,
+      unique: true
+    }
+  });
+
 const videoSchema = new Schema({
 
-    videoFile:{
-        type:String,
-        required : true
-    },
+    videoFile: urlAndPublicIdSchema,
     thumbnail:{
-        type : String,
-        required: true
+        // type : String,
+        // required: true
+       url: {type: String,required:true},
+        public_id:{type:String,required:true}
     },
     title:{
         type: String,
@@ -33,12 +44,14 @@ const videoSchema = new Schema({
         type: Boolean,
         default : true
         },
-        owner:{
+    owner:{
             type: Schema.Types.ObjectId,
             ref: "User"
         }
-})
+},{timestamps:true})
 
 videoSchema.plugin(mongooseAggregatePaginate)
 
-export const Video = mongoose.model("Video",videoSchema)
+const Video = mongoose.model("Video",videoSchema)
+
+export default Video

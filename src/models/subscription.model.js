@@ -7,11 +7,11 @@ const subscriptionSchema = new Schema({
     ref : "User"},
 
     subscriber : {
-        type : {
+
             type : Schema.Types.ObjectId,
             ref : "User"
         }
-    }
+    
 })
 
 const Subscription = mongoose.model("Subscription",subscriptionSchema)

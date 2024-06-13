@@ -36,9 +36,9 @@ const uploadOnCloudinary = async(localFilePath)=>{
     }
 }
 
-const deleteFromCloudinary = async(cloudinaryFilePath)=>{
+const deleteFromCloudinary = async(cloudinaryFilePath,resource_type="image")=>{
     try{
-        const response =  await cloudinary.uploader.destroy(cloudinaryFilePath,{resource_type:"image"})
+        const response =  await cloudinary.uploader.destroy(cloudinaryFilePath,{resource_type:resource_type})
         return response
     }catch(error){
         throw new ApiError(400,"File not deleted from cloudinary : ",error)

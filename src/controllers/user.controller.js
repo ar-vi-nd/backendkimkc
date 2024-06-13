@@ -167,7 +167,8 @@ const userLogin = asyncHandler(async (req,res)=>{
 
     const options = {
         httpOnly:true,
-        secure : true
+        // if i keep secure : true I am unable to send request along with cookies in thunderclient
+        secure : false
     }
 
     // not a function, cannot do it like this
@@ -195,20 +196,25 @@ const userLogout = asyncHandler(async(req,res)=>{
    const user = await User.findByIdAndUpdate(
         req.user._id,{
 
-            $set:{
-                // unable to set it to undefined
+            // $set:{
+            //     // unable to set it to undefined
+            //     // refreshToken:undefined
+            //     refreshToken:""
 
-                // refreshToken:undefined
-                refreshToken:""
-
+            // }
+            $unset:{
+                refreshTokens:1
+                // better approach this removes refreshToken field from mongodb
             }
+
+
             },{
             new:true
         }
         
     )
 
-    console.log(user)
+    // console.log(user)
 
     if(!user){
         throw new ApiError(400,"Error while logging out")
@@ -248,7 +254,7 @@ const refreshTokens = asyncHandler(async(req,res)=>{
     
     const options = {
         httpOnly:true,
-        secure: true
+        secure: false
     }
     const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user)
 
@@ -282,7 +288,7 @@ const changePassword = asyncHandler(async(req,res)=>{
 
     console.log(updatedUser)
 
-    return res.status(201).json(new ApiResponse(200,"Password Updated"))
+return res.status(201).json(new ApiResponse(200,{},"Password Updated"))
 
 })
 
@@ -398,11 +404,11 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
 
     }
 
-    return res.status(200).json(new ApiResponse(200,"Cover Image Updated Successfully"))
+    return res.status(200).json(new ApiResponse(200,{},"Cover Image Updated Successfully"))
 
 })
 
-const getUserChannelProfile = asyncHandler(async(req,res)=>{
+const getChannelProfile = asyncHandler(async(req,res)=>{
     const {username} = req.params
     if(!username?.trim()){
         throw new ApiError(400,"Username is missing")
@@ -478,10 +484,10 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
 
 const getUserWatchHistory = asyncHandler(async (req,res)=>{
 
-    const userWatchHistory = await User.aggregate([
+    const user = await User.aggregate([
         {
             $match : {
-                _id : new mongoose.Types.ObjectId.createFromHexString(req.user._id)
+                _id : new mongoose.Types.ObjectId(req.user?._id)
             }
         },
         {
@@ -513,7 +519,9 @@ const getUserWatchHistory = asyncHandler(async (req,res)=>{
                     {
                 $addFields:{
                     owner:{
-                        $first:"$owner"
+                        // $first:"$owner"
+                        $arrayElemAt:["$owner",0]
+                        // same thing
                     }
                 }
             }]
@@ -521,11 +529,11 @@ const getUserWatchHistory = asyncHandler(async (req,res)=>{
         }
     ])
 
-    console.log(userWatchHistory)
-    return res.status(200).ApiResponse(400,userWatchHistory[0],"User history fetched successfully")
+    console.log(user[0].watchHistory)
+    return res.status(200).json(new ApiResponse(400,user[0].watchHistory,"User history fetched successfully"))
 })
 
-export {userLogin,userLogout,refreshTokens,changePassword,updateUser,updateAvatar,updateCoverImage}
+export {userLogin,userLogout,refreshTokens,changePassword,updateUser,updateAvatar,updateCoverImage,getChannelProfile,getUserWatchHistory}
 
 
 
