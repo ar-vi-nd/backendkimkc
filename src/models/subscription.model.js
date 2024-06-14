@@ -16,4 +16,5 @@ const subscriptionSchema = new Schema({
 
 const Subscription = mongoose.model("Subscription",subscriptionSchema)
 
-export default subscriptionSchema;
+export default Subscription;
+// it was wrong in last commit
