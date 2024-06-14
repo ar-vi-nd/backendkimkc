@@ -209,6 +209,8 @@ const updateVideo = asyncHandler(async(req,res)=>{
 
 const togglePublish = asyncHandler(async(req,res)=>{
     const {id} = req.params
+
+    // I am able to use aggregatin pipeline with findByIdAndUpdate but not with findOne
     const video = await Video.findByIdAndUpdate(id,
          [{ $set: { isPublished: { $not: "$isPublished" } } }],
     {new:true})

@@ -22,5 +22,5 @@ const commentSchema = new Schema({
 
 commentSchema.plugin(mongooseAggregatePaginate)
 
-const Comment = mongoose.model("Video",commentSchema)
+const Comment = mongoose.model("Comment",commentSchema)
 export default Comment

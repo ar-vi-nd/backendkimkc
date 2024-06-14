@@ -12,5 +12,5 @@ const tweetSchema = new Schema({
 
 },{timestamps:true})
 
-const Tweet = mongoose.model("Tweet",Tweets)
+const Tweet = mongoose.model("Tweet",tweetSchema)
 export default Tweet
