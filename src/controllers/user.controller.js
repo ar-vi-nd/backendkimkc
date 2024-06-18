@@ -486,6 +486,7 @@ const getUserWatchHistory = asyncHandler(async (req,res)=>{
 
     const user = await User.aggregate([
         {
+            // here we need to cast userid to mongodb object as pipeline doesnt support automatic casting
             $match : {
                 _id : new mongoose.Types.ObjectId(req.user?._id)
             }
