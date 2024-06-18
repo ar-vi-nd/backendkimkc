@@ -6,6 +6,7 @@ import { ApiResponse } from "../utility/ApiResponse.js";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utility/cloudinary.js";
 import mongoose ,{ isValidObjectId} from "mongoose";
 import { upload } from "../middlewares/multer.middleware.js";
+import fetch from 'node-fetch';
 
 
 
@@ -132,6 +133,29 @@ const getVideoById = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Video Doesnt Exist")
     }
     console.log(video)
+
+
+    // the below portion is to update video count when you play video
+
+    // request.cookie wont be available when we make a node fetch request so 
+    // need to set authorization header
+
+    // const response = await fetch(`http://127.0.0.1:8000/api/v1/videos/views/${id}`, {
+    //     method: "PATCH", // *GET, POST, PUT, DELETE, etc.
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       // 'Content-Type': 'application/x-www-form-urlencoded',
+    //       "Authorization": `Bearer ${req.cookies?.accessToken}`
+    //     },
+    //   });
+
+    //   if (!response.ok) {
+    //     throw new ApiError(response.status, "Failed to update video views");
+    //   }
+    
+    //   let returndata = await response.json()
+    //   console.log(returndata)
+    //   video.views = returndata.data
     return res.status(200).json(new ApiResponse(200,video,"Video fetched Successfully"))
 })
 
@@ -165,6 +189,7 @@ const deleteVideo = asyncHandler(async(req,res)=>{
 })
 
 const updateVideo = asyncHandler(async(req,res)=>{
+    console.log("updating video views")
     const {id} = req.params
     if(!id){
         throw new ApiError(400,"id required")
@@ -224,4 +249,25 @@ const togglePublish = asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,video,"Video's Publish Status Toggled"))
 })
 
-export {getAllVideos,publishAVideo,getVideoById,deleteVideo,updateVideo,togglePublish}
+const updateVideoViews = asyncHandler(async(req,res)=>{
+    const {videoId}  = req.params
+
+    // const updatedVideo = await Video.findByIdAndUpdate(videoId,{$set:{views: views+1}})
+
+    // this is wrong way below one is right way
+
+    const updatedVideo = await Video.findByIdAndUpdate(
+        videoId,
+        { $inc: { views: 1 } },
+        { new: true } // This option returns the updated document
+      );
+
+    if(!updateVideo){
+        throw new ApiError(400,"Unable to updat views count")
+    }
+
+    return res.status(200).json(new ApiResponse(200,updatedVideo.views,"Views Count Updated"))
+
+})
+
+export {getAllVideos,publishAVideo,getVideoById,deleteVideo,updateVideo,togglePublish,updateVideoViews}
